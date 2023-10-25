@@ -9,7 +9,7 @@ export default function groups(user, users){
             case 1:
                 if(user.group.length === 0) console.log('You have 0 Members in the group');
                 else{
-                    user.group.forEach(member => console.log(member.name));
+                    user.group.forEach(member => console.log(member));
                 }
                 break;
             case 2:
@@ -20,9 +20,9 @@ export default function groups(user, users){
                     try{
                         if(addMemberName === user.name) throw 'You are already in the group';
                         if(index===-1) throw 'user not found. Check the user name';
-                        user.addGroupMember(users[index]);
+                        user.addGroupMember(users[index].name);
                         let friend = users.find(user => user.name === addMemberName);
-                        friend.addGroupMember(user);
+                        friend.addGroupMember(user.name);
                         console.log(`----------${addMemberName} added to Group
                         You are added to ${addMemberName}'s group--------`);
                     }
@@ -37,7 +37,7 @@ export default function groups(user, users){
                 break;
             case 3:
                 const deleteMemberName = readlineSync.question('\nMember name: ');
-                const index1 = user.group.findIndex(member => member.name === deleteMemberName);
+                const index1 = user.group.findIndex(member => member === deleteMemberName);
                 try{
                     if(index1 === -1) throw `${deleteMemberName} is not found in the group`;
                     user.group.splice(index1,1);

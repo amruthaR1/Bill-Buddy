@@ -3,22 +3,77 @@ import readlineSync from 'readline-sync';
 import createExpense from "./CreateExpense.js";
 import groups from "./CreateGroup.js";
 import owes  from "./owes.js";
+import fs from 'fs';
+import { promisify } from 'util';
+
+const saveUserData = async () => {
+    const writeFileAsync = promisify(fs.writeFile);
+    try {
+        let data = '[';
+        users.forEach((user,index) => {
+                if(index === 0)
+                    data += user.getPrivateFieldUserData();
+                else{
+                    data += ','+user.getPrivateFieldUserData();
+                }
+            });
+        data += ']'
+        //console.log(data);
+        await writeFileAsync('userDetails.json', data);
+        console.log('User Data stored in Database');
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+    }
+};
+
+const loadUserData = async () => {
+    const readFileAsync = promisify(fs.readFile);
+    try {
+      const data = await readFileAsync('userDetails.json', 'utf-8');
+      const parsedUser = JSON.parse(data);
+      users = parsedUser.map(user => new User(user.name,user.password,user.expenses,user.group,user.owes));
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        await saveUserData();
+      } else {
+        //console.error(`Error: ${error.message}`);
+      }
+    }
+};
+
+
+const inputValidationForUserDetails = (userName) => {
+    let NameRegix = /^[a-zA-Z]{3,}$/;
+    let valid=true
+    if (!NameRegix.test(userName.trim())) {
+        console.log("Username must be at least 3 characters long and can only contain letters.")
+        createUser()
+    }
+    else {
+        return valid;
+    }
+
+};
 
 const createUser = () => {
     let registerUserName = readlineSync.question('User Name: ');
-    let registerPassword = readlineSync.question('Password: ');
-    try{
-        if(!registerUserName) throw `---username can't be empty-------`;
-        users.forEach(user=>{
-            if(user.name === registerUserName) throw '------User Name already Exits.Try different name----';
-        })
-        if(!registerPassword) throw `---Password can't be empty-------`;
-        const user = new User(registerUserName, registerPassword);
-        users.push(user);
-        console.log('-------Registration successfull-----------');
-    }
-    catch(err){
-        console.log(err);
+    let valid=inputValidationForUserDetails(registerUserName);
+    if (valid) {
+        let registerPassword = readlineSync.question('Password: ');
+
+        try {
+            if (!registerUserName) throw `---username can't be empty-------`;
+            users.forEach(user => {
+                if (user.name === registerUserName) throw '------User Name already Exits.Try different name----';
+            })
+            if (!registerPassword) throw `---Password can't be empty-------`;
+            const user = new User(registerUserName, registerPassword,[],[],[]);
+            users.push(user);
+            console.log('-------Registration successfull-----------');
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
 };
 
@@ -168,10 +223,11 @@ function expenses(user){
 }
 
 
-
-
+let users = [];
+await loadUserData();
 let flag = true;
-const users = [];
+//console.log(users);
+
 
 while(flag){
     let choice = parseInt(readlineSync.question('1.LogIn\n2.Register\n3.Exit Application\n'));
@@ -191,12 +247,15 @@ while(flag){
                         switch(reportChoice){
                             case 1:
                                 expenses(user);
+                                //saveUserData();
                                 break;
                             case 2:
                                 owes(user);
+                                //saveUserData();
                                 break;
                             case 3:
                                 groups(user, users);
+                                //saveUserData();
                                 break;
                             case 4:
                                 flag1 = false;
@@ -217,9 +276,11 @@ while(flag){
             break;
         case 2:
             createUser();
+            //saveUserData();
             break;
         case 3:
             flag=false;
+            saveUserData();
             break;
         default:
             console.log('Select the correct option')

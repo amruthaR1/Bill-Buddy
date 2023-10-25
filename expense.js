@@ -1,11 +1,12 @@
 export default class Expenses{
-    constructor(name, date, cost, payer,equally){
+    constructor(name, date, cost, payer,equally, payees){
         this.name = name;
         this.date = date;
         this.cost = cost;
         this.payer = payer;
         this.equally=equally;
         this.payees = [];
+        if(payees.length !== 0) this.payees = this.payees.concat(payees);
     }
 
     addPayee(payee){

@@ -1,4 +1,5 @@
 import readlineSync from 'readline-sync';
+import Expenses from './expense.js';
 
 
 function editExpenseStatus(user){
@@ -31,7 +32,7 @@ export default function owes(user){
                 break;
             case 2:
                 let costUserOwe = {};
-                user.group.forEach(member => costUserOwe[member.name] = 0);
+                user.group.forEach(member => costUserOwe[member] = 0);
                 user.owes.forEach(expense => {
                     costUserOwe[expense.payer] += expense.getCostneedToPayByPayee(user.name);
                 }
